@@ -1,29 +1,25 @@
-const UFile = require('@charbo/ufile-node-sdk')
+const utils = require('./utils')
 
 const handle = async (ctx) => {
   const UCloudOptions = ctx.getConfig('picBed.UCloud-uploader')
   if (!UCloudOptions) {
     throw new Error('找不到UCloud图床配置文件')
   }
-  const uFile = new UFile({
-    publicKey: UCloudOptions.publicKey,
-    privateKey: UCloudOptions.privateKey,
-    bucket: UCloudOptions.bucket,
-    protocol: 'https',
-    domain: UCloudOptions.domain,
-    cdnDomain: UCloudOptions.cdnDomain
-  })
 
   await Promise.all(ctx.output.map(async (i) => {
-    i.imgUrl = (await uFile.putFile({ fileRename: i.fileName, filePath: ctx.input[ctx.output.indexOf(i)], prefix: UCloudOptions.prefix })).url
-  })).catch(error => {
-    ctx.emit('notification', {
-      title: '上传错误',
-      body: JSON.stringify(error.msg)
-    })
-
-    throw error.msg
-  })
+    UCloudOptions.fileName = i.fileName
+    UCloudOptions.filePath = ctx.input[ctx.output.indexOf(i)]
+    try {
+      await utils.upload(UCloudOptions, i, ctx)
+      return i
+    } catch (err) {
+      ctx.emit('notification', {
+        title: '上传错误',
+        body: err.message
+      })
+      console.log(err.message)
+    }
+  }))
 
   return ctx
 }
@@ -74,7 +70,7 @@ const config = (ctx) => {
     {
       name: 'cdnDomain',
       type: 'input',
-      alias: '自定义域名',
+      alias: '自定义域名，包括http开头',
       default: userConfig.cdnDomain || '',
       required: false
     }
