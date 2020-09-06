@@ -1,6 +1,6 @@
 {
   "name": "picgo-plugin-ucloud-uploader",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "This is a picgo plugin for UCloud.",
   "main": "src/index.js",
   "publishConfig": {
