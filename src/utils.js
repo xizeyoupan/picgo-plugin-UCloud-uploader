@@ -10,7 +10,7 @@ const upload = async (options, img, ctx) => {
   let signature = CryptoJS.enc.Base64.stringify(hash)
   let token = 'UCloud ' + options.publicKey + ':' + signature
   const fileUrl = 'https://' + options.bucket + options.domain + '/' + key
-  await ctx.Request.request({
+  await ctx.request({
     method: 'PUT',
     url: fileUrl,
     headers: {
@@ -19,14 +19,9 @@ const upload = async (options, img, ctx) => {
       'Content-Type': mimeType
     },
     body: img.buffer
-  }, function (error, response, body) {
-    if (error) {
-      throw error
-    }
-    if (response.statusCode === 200) {
-      img.imgUrl = getFileUrl(fileUrl, key, options.cdnDomain)
-    }
   })
+
+  return getFileUrl(fileUrl, key, options.cdnDomain)
 }
 
 const getMimeType = (filePath) => {

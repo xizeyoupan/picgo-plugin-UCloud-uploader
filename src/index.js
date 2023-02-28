@@ -6,11 +6,12 @@ const handle = async (ctx) => {
     throw new Error('找不到UCloud图床配置文件')
   }
 
-  await Promise.all(ctx.output.map(async (i) => {
+  await Promise.all(ctx.output.map(async (i, index) => {
     UCloudOptions.fileName = i.fileName
-    UCloudOptions.filePath = ctx.input[ctx.output.indexOf(i)]
+    UCloudOptions.filePath = ctx.input[index]
     try {
-      await utils.upload(UCloudOptions, i, ctx)
+      const url = await utils.upload(UCloudOptions, i, ctx)
+      i.imgUrl = url
       return i
     } catch (err) {
       ctx.emit('notification', {
